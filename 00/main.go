@@ -11,7 +11,7 @@ func main() {
 
 	reverseStr := Reverse(str)
 
-	fmt.Printf("after:  %s \n", reverseStr)
+	fmt.Printf("result:  %s \n", reverseStr)
 
 }
 
