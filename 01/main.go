@@ -8,18 +8,14 @@ func main() {
 	str := "パタトクカシーー"
 	target := []int{1, 3, 5, 7}
 	result := []rune{}
+	runes := []rune(str)
 
-	for _, v := range target {
-		targetRune := GetTargetRune(str, v-1)
+	fmt.Printf("before: %s \n", str)
+
+	for _, t := range target {
+		targetRune := runes[t-1]
 		result = append(result, targetRune)
 	}
 
-	fmt.Println(string(result))
-
-}
-
-func GetTargetRune(s string, target int) rune {
-	runes := []rune(s)
-
-	return runes[target]
+	fmt.Printf("result: %s \n", string(result))
 }
