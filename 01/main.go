@@ -5,22 +5,21 @@ import (
 )
 
 func main() {
-	str := "stressed"
+	str := "パタトクカシーー"
+	target := []int{1, 3, 5, 7}
+	result := []rune{}
 
-	fmt.Printf("before: %s \n", str)
+	for _, v := range target {
+		targetRune := GetTargetRune(str, v-1)
+		result = append(result, targetRune)
+	}
 
-	reverseStr := Reverse(str)
-
-	fmt.Printf("after:  %s \n", reverseStr)
+	fmt.Println(string(result))
 
 }
 
-func Reverse(s string) string {
+func GetTargetRune(s string, target int) rune {
 	runes := []rune(s)
 
-	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-		runes[i], runes[j] = runes[j], runes[i]
-	}
-
-	return string(runes)
+	return runes[target]
 }
