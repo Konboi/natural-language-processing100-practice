@@ -12,7 +12,6 @@ func main() {
 	reverseStr := Reverse(str)
 
 	fmt.Printf("result:  %s \n", reverseStr)
-
 }
 
 func Reverse(s string) string {
