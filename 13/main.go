@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"sync"
 )
 
 const (
@@ -16,12 +15,15 @@ const (
 )
 
 var (
-	ch1 = make(chan string)
-	ch2 = make(chan string)
-	wg  sync.WaitGroup
+	ch1 = make(chan string, 256)
+	ch2 = make(chan string, 256)
 )
 
 func main() {
+	MergeColumnsWithChannel()
+}
+
+func MergeColumnsWithChannel() {
 	f1, err := os.Open(COL1_FILENAME)
 	if err != nil {
 		log.Fatalln("open col1.txt error:", err)
@@ -39,31 +41,26 @@ func main() {
 	}
 	defer mf.Close()
 
-	wg.Add(2)
 	go ScanFile(f1, ch1)
 	go ScanFile(f2, ch2)
-	go func() {
-		for {
-			var c1, c2 string
-			for c1 == "" || c2 == "" {
-				select {
-				case t := <-ch1:
-					c1 = t
-				case t := <-ch2:
-					c2 = t
-				}
-			}
-			fmt.Fprintf(mf, "%s\t%s\n", c1, c2)
+	for {
+		c1, ok1 := <-ch1
+		if !ok1 {
+			break
 		}
-	}()
-	wg.Wait()
+		c2, ok2 := <-ch2
+		if !ok2 {
+			break
+		}
+		fmt.Fprintf(mf, "%s\t%s\n", c1, c2)
+	}
 }
 
 func ScanFile(r io.Reader, ch chan string) {
-	defer wg.Done()
 	s := bufio.NewScanner(r)
 	for s.Scan() {
 		t := s.Text()
 		ch <- t
 	}
+	close(ch)
 }
