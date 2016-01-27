@@ -2,9 +2,9 @@ package main
 
 //
 // $ go build -o split_file
-// $ ./split_file -n 3 test.txt
+// $ ./split_file -n 3 hightemp.txt
 
-// $ cat split.1.txt | wc -l | xargs -J% split -l % test.txt _split.
+// $ cat hightemp.txt | wc -l | xargs -J% split -l % test.txt _split.
 //
 
 import (
