@@ -45,7 +45,7 @@ func main() {
 			log.Println(err.Error())
 			return
 		}
-		if checker.FindString(line) == "" && checker.FindString(line) == "" {
+		if checker.FindString(line) == "" {
 			continue
 		}
 
@@ -57,5 +57,4 @@ func main() {
 
 		fmt.Println(article.Text)
 	}
-
 }
