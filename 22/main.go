@@ -13,7 +13,7 @@ type Article struct {
 	Text  string `json:"text"`
 }
 
-var re = regexp.MustCompilePOSIX(`^\[\[Category:.+?\]\].*?`)
+var re = regexp.MustCompilePOSIX(`^\[\[Category:([^\|]+?)\|?.+?\]\].*?`)
 
 func main() {
 	raw, err := ioutil.ReadFile("../20/uk.json")
@@ -29,8 +29,8 @@ func main() {
 	}
 
 	for _, a := range article {
-		for _, str := range re.FindAllString(a.Text, -1) {
-			fmt.Println(str)
+		for _, str := range re.FindAllStringSubmatch(a.Text, -1) {
+			fmt.Println(str[1])
 		}
 	}
 }
