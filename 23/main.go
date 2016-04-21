@@ -21,7 +21,7 @@ var s4 = regexp.MustCompilePOSIX(`^====[^=]+`)
 var s5 = regexp.MustCompilePOSIX(`^====[^=]+`)
 
 func main() {
-	raw, err := ioutil.ReadFile("uk.json")
+	raw, err := ioutil.ReadFile("../20/uk.json")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
