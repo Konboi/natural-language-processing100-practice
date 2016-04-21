@@ -16,7 +16,7 @@ type Article struct {
 var re = regexp.MustCompilePOSIX(`^\[\[Category:([^\|]+?)\|?.+?\]\].*?`)
 
 func main() {
-	raw, err := ioutil.ReadFile("uk.json")
+	raw, err := ioutil.ReadFile("../20/uk.json")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
