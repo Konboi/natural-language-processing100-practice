@@ -37,6 +37,9 @@ type Article struct {
 // ```
 var sRe = regexp.MustCompile(`\n\||\|\n`)
 
+// '' ''' ''''
+var strongRe = regexp.MustCompile(`'{2,4}`)
+
 func main() {
 	raw, err := ioutil.ReadFile("../20/uk.json")
 	if err != nil {
@@ -81,7 +84,7 @@ func main() {
 				buf += string(r)
 			}
 		}
-		log.Println(buf)
+		//log.Println(buf)
 
 		// 先頭末尾の `{{` `}}` を除去
 		buf = strings.Trim(buf, "{}")
@@ -104,6 +107,9 @@ func main() {
 			// 先頭末尾の空白と改行を除去
 			k = strings.Trim(k, " \n")
 			v = strings.Trim(v, " \n")
+
+			// '' ''' '''' 除去
+			v = strongRe.ReplaceAllString(v, "")
 
 			fmt.Printf("key: %s, content: %s \n", k, v)
 		}
