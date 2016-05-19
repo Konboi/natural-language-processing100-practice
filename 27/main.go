@@ -36,7 +36,7 @@ type Article struct {
 // }}
 // ```
 var sRe = regexp.MustCompile(`\n\||\|\n`)
-var lRe = regexp.MustCompilePOSIX(`\[\[.+?\|+?.+?\]\]`)
+var lRe = regexp.MustCompilePOSIX(`\[\[.+?\|+?.+?\]\].+?`)
 
 // '' ''' ''''
 var strongRe = regexp.MustCompile(`'{2,4}`)
@@ -156,6 +156,7 @@ func main() {
                 replaceLinkResult = linkStr
             }
 
+			    fmt.Printf("origin key: %s, content: %s \n", k, v)
             if replaceLinkResult == "" {
 			    fmt.Printf("key: %s, content: %s \n", k, v)
             }
