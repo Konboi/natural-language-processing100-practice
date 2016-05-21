@@ -36,9 +36,11 @@ type Article struct {
 // }}
 // ```
 var sRe = regexp.MustCompile(`\n\||\|\n`)
+var lRe = regexp.MustCompilePOSIX(`\[\[.+?\|+?.+?\]\].+?`)
 
 // '' ''' ''''
 var strongRe = regexp.MustCompile(`'{2,4}`)
+var linkRe   = regexp.MustCompile(`[\[|\]]`)
 
 func main() {
 	raw, err := ioutil.ReadFile("../20/uk.json")
@@ -110,8 +112,47 @@ func main() {
 
 			// '' ''' '''' 除去
 			v = strongRe.ReplaceAllString(v, "")
+			// 内部リンクの除去
+			// [[]] 除去
+			replaceLinkResult := ""
+			for _, linkStr := range lRe.FindAllString(v, -1) {
+				// [[val1|val2|val3]]|[[val4|val5|val6]]を
+				// [[val1
+				// val2
+				// val3]]
+				// [[val4
+				// val5
+				// val6]]に
+				charResult := []string{}
+				linkVals := strings.Split(linkStr, "|")
+				for i, linkChar := range linkVals {
+					if i == (len(linkVals) -1) {
+						charResult = append(charResult, linkChar)
+					}
+					if i < (len(linkVals) -1) {
+						if strings.Contains(linkChar, "[[") {
+							subChar := strings.Split(linkChar, "[[")
+							for i, char := range subChar {
+								if i < (len(subChar) -1) {
+									charResult = append(charResult, char)
+								}
+							}
+						}
+					}
+				}
 
-			fmt.Printf("key: %s, content: %s \n", k, v)
+				linkStr = strings.Join(charResult, "")
+				linkStr = linkRe.ReplaceAllString(linkStr, "")
+				replaceLinkResult = linkStr
+			}
+			fmt.Printf("origin key: %s, content: %s \n", k, v)
+			if replaceLinkResult == "" {
+				fmt.Printf("key: %s, content: %s \n", k, v)
+			}
+			if replaceLinkResult != "" {
+				fmt.Printf("key: %s, content: %s \n", k, replaceLinkResult)
+			}
 		}
+		fmt.Println("--------------------------")
 	}
 }
