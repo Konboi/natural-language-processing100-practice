@@ -111,15 +111,17 @@ func main() {
 
 			// '' ''' '''' 除去
 			v = strongRe.ReplaceAllString(v, "")
-			// 内部リンクの除去
-			// [[]] 除去
 			removeMarkup := ""
+			// 内部リンクの除去
 			removeMarkup = removeInternalLink(v)
 			// htmlタグ除去
 			removeMarkup = removeHtmlTag(removeMarkup)
+			// ファイルを除去
 			removeMarkup = removeFile(removeMarkup)
+			// 外部リンクを除去
+			removeMarkup = removeExternalLink(removeMarkup)
 
-			fmt.Printf("origin key: %s, content: %s \n", k, v)
+			fmt.Printf("origin key: %s, content: %s \n\n", k, v)
 			if removeMarkup == "" {
 				fmt.Printf("key: %s, content: %s\n", k, v)
 			} else {
@@ -140,7 +142,13 @@ func removeInternalLink (str string) string {
 		if (len(subStrs) == 2) && !fileRe.MatchString(subStrs[1]) {
 			// "|"で分割して最後の要素をreturn
 			matchStrs := strings.Split(subStrs[1], "|")
-			return matchStrs[len(matchStrs)-1]
+			result := matchStrs[len(matchStrs)-1]
+			// もし「#」で始まっていれば「#」を除去
+			if strings.HasPrefix(result, "#") {
+				tmp := []rune(result)
+				result = string(tmp[1:len(tmp)])
+			}
+			return result
 		}
 		return s
 	}
@@ -156,14 +164,14 @@ func removeHtmlTag (str string) string {
 	var commentRe = regexp.MustCompile(`<\!--.*?-->`)
 	// refタグ
 	var refRe = regexp.MustCompile(`<ref.*?>|</ref>`)
-	// brタグ
-	var brRe = regexp.MustCompile(`<br\s?/>`)
+	// brタグ（後ろに改行があるときもあるので、それも含めて検索）
+	var brRe = regexp.MustCompile(`<br\s?/>\n?`)
 	// supタグ
 	var supRe = regexp.MustCompile(`<sup>|</sup>`)
 	//除去
 	result = commentRe.ReplaceAllString(result, "")
 	result = refRe.ReplaceAllString(result, "")
-	result = brRe.ReplaceAllString(result, "")
+	result = brRe.ReplaceAllString(result, "\n")
 	result = supRe.ReplaceAllString(result, "")
 	return result
 }
@@ -179,4 +187,17 @@ func removeFile (str string) string {
 	}
 	result := re.ReplaceAllStringFunc(str, findDisplayName)
 	return result
+}
+func removeExternalLink (str string) string {
+	var re = regexp.MustCompile(`\[(http\S+?)\s(.+?)\]`)
+	findDisplayName := func(s string) string {
+		linkStrs := re.FindStringSubmatch(s)
+		if len(linkStrs) == 2 {
+			return "[1]"
+		} else if len(linkStrs) == 3 {
+			return linkStrs[len(linkStrs)-1]
+		}
+		return s
+	}
+	return re.ReplaceAllStringFunc(str, findDisplayName)
 }
