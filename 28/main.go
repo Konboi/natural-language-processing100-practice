@@ -113,14 +113,17 @@ func main() {
 			v = strongRe.ReplaceAllString(v, "")
 			// 内部リンクの除去
 			// [[]] 除去
-			removeInternalLinkStr := removeInternalLink(v)
-			removeInternalLinkStr = removeRef(removeInternalLinkStr)
+			removeMarkup := ""
+			removeMarkup = removeInternalLink(v)
+			// htmlタグ除去
+			removeMarkup = removeHtmlTag(removeMarkup)
+			removeMarkup = removeFile(removeMarkup)
 
 			fmt.Printf("origin key: %s, content: %s \n", k, v)
-			if removeInternalLinkStr == "" {
+			if removeMarkup == "" {
 				fmt.Printf("key: %s, content: %s\n", k, v)
 			} else {
-				fmt.Printf("key: %s, content: %s\n", k, removeInternalLinkStr)
+				fmt.Printf("key: %s, content: %s\n", k, removeMarkup)
 			}
 		}
 		fmt.Println("============================================\n")
@@ -129,15 +132,14 @@ func main() {
 
 func removeInternalLink (str string) string {
 	var lRe = regexp.MustCompile(`\[\[(.+?\|?.+?)\]\]`)
-	// var linkRe   = regexp.MustCompile(`[\[|\]]`)
-
 	findDisplayName := func(s string) string {
 		// (.+?\|?.+?)の部分を取得
 		subStrs := lRe.FindStringSubmatch(s)
-		// マッチしていたら
-		if len(subStrs) == 2 {
+		fileRe := regexp.MustCompile(`^ファイル:`)
+		// マッチしていたら かつ 「ファイル:」で始まっていない
+		if (len(subStrs) == 2) && !fileRe.MatchString(subStrs[1]) {
 			// "|"で分割して最後の要素をreturn
-			matchStrs := strings.Split(subStrs[1],"|")
+			matchStrs := strings.Split(subStrs[1], "|")
 			return matchStrs[len(matchStrs)-1]
 		}
 		return s
@@ -148,8 +150,33 @@ func removeInternalLink (str string) string {
 
 	return result
 }
-func removeRef (str string) string {
+func removeHtmlTag (str string) string {
+	result := str
+	// コメントアウト
+	var commentRe = regexp.MustCompile(`<\!--.*?-->`)
+	// refタグ
 	var refRe = regexp.MustCompile(`<ref.*?>|</ref>`)
-	result := refRe.ReplaceAllString(str, "")
+	// brタグ
+	var brRe = regexp.MustCompile(`<br\s?/>`)
+	// supタグ
+	var supRe = regexp.MustCompile(`<sup>|</sup>`)
+	//除去
+	result = commentRe.ReplaceAllString(result, "")
+	result = refRe.ReplaceAllString(result, "")
+	result = brRe.ReplaceAllString(result, "")
+	result = supRe.ReplaceAllString(result, "")
+	return result
+}
+func removeFile (str string) string {
+	var re = regexp.MustCompile(`\[\[(.+)\|(.+)\|(.+)\]\]`)
+	findDisplayName := func(s string) string {
+		// ((.+)\|(.+)\|(.+))の部分を取得
+		subStrs := re.FindStringSubmatch(s)
+		if len(subStrs) == 4 {
+			return subStrs[len(subStrs)-1]
+		}
+		return s
+	}
+	result := re.ReplaceAllStringFunc(str, findDisplayName)
 	return result
 }
