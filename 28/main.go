@@ -36,11 +36,9 @@ type Article struct {
 // }}
 // ```
 var sRe = regexp.MustCompile(`\n\||\|\n`)
-var lRe = regexp.MustCompilePOSIX(`\[\[.+?\|+?.+?\]\].+?`)
 
 // '' ''' ''''
 var strongRe = regexp.MustCompile(`'{2,4}`)
-var linkRe   = regexp.MustCompile(`[\[|\]]`)
 
 func main() {
 	raw, err := ioutil.ReadFile("../20/uk.json")
@@ -114,45 +112,45 @@ func main() {
 			v = strongRe.ReplaceAllString(v, "")
 			// 内部リンクの除去
 			// [[]] 除去
-			replaceLinkResult := ""
-			for _, linkStr := range lRe.FindAllString(v, -1) {
-				// [[val1|val2|val3]]|[[val4|val5|val6]]を
-				// [[val1
-				// val2
-				// val3]]
-				// [[val4
-				// val5
-				// val6]]に
-				charResult := []string{}
-				linkVals := strings.Split(linkStr, "|")
-				for i, linkChar := range linkVals {
-					if i == (len(linkVals) -1) {
-						charResult = append(charResult, linkChar)
-					}
-					if i < (len(linkVals) -1) {
-						if strings.Contains(linkChar, "[[") {
-							subChar := strings.Split(linkChar, "[[")
-							for i, char := range subChar {
-								if i < (len(subChar) -1) {
-									charResult = append(charResult, char)
-								}
-							}
-						}
-					}
-				}
+			removeInternalLinkStr := removeInternalLink(v)
 
-				linkStr = strings.Join(charResult, "")
-				linkStr = linkRe.ReplaceAllString(linkStr, "")
-				replaceLinkResult = linkStr
-			}
 			fmt.Printf("origin key: %s, content: %s \n", k, v)
-			if replaceLinkResult == "" {
-				fmt.Printf("key: %s, content: %s \n", k, v)
-			}
-			if replaceLinkResult != "" {
-				fmt.Printf("key: %s, content: %s \n", k, replaceLinkResult)
+			if removeInternalLinkStr == "" {
+				fmt.Printf("key: %s, content: %s\n", k, v)
+			} else {
+				fmt.Printf("key: %s, content: %s\n", k, removeInternalLinkStr)
 			}
 		}
 		fmt.Println("--------------------------")
 	}
+}
+
+func removeInternalLink (str string) string {
+	var lRe = regexp.MustCompilePOSIX(`\[\[.+?\|+?.+?\]\].+?`)
+	var linkRe   = regexp.MustCompile(`[\[|\]]`)
+	result := ""
+	for _, linkStr := range lRe.FindAllString(str, -1) {
+		fmt.Printf("have link: %s\n", linkStr)
+		tmpResult := []string{}
+		linkVals := strings.Split(linkStr, "|")
+		for i, linkChar := range linkVals {
+			if i == (len(linkVals) - 1) {
+				// |で分割した最後は表示名なので結果に加える
+				tmpResult = append(tmpResult, linkChar)
+			} else {
+				if strings.Contains(linkChar, "[[") {
+					subChar := strings.Split(linkChar, "[[")
+					for i, char := range subChar {
+						if i < (len(subChar) - 1) {
+							tmpResult = append(tmpResult, char)
+						}
+					}
+				}
+			}
+		}
+		linkStr = strings.Join(tmpResult, "")
+		linkStr = linkRe.ReplaceAllString(linkStr,"")
+		result = linkStr
+	}
+	return result
 }
