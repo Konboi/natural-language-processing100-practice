@@ -90,6 +90,7 @@ func main() {
 		buf = strings.Trim(buf, "{}")
 
 		for i, kvStr := range sRe.Split(buf, -1) {
+			fmt.Println("-----------------------------\n")
 			if i == 0 {
 				continue
 			}
@@ -113,6 +114,7 @@ func main() {
 			// 内部リンクの除去
 			// [[]] 除去
 			removeInternalLinkStr := removeInternalLink(v)
+			removeInternalLinkStr = removeRef(removeInternalLinkStr)
 
 			fmt.Printf("origin key: %s, content: %s \n", k, v)
 			if removeInternalLinkStr == "" {
@@ -121,36 +123,33 @@ func main() {
 				fmt.Printf("key: %s, content: %s\n", k, removeInternalLinkStr)
 			}
 		}
-		fmt.Println("--------------------------")
+		fmt.Println("============================================\n")
 	}
 }
 
 func removeInternalLink (str string) string {
-	var lRe = regexp.MustCompilePOSIX(`\[\[.+?\|+?.+?\]\].+?`)
-	var linkRe   = regexp.MustCompile(`[\[|\]]`)
-	result := ""
-	for _, linkStr := range lRe.FindAllString(str, -1) {
-		fmt.Printf("have link: %s\n", linkStr)
-		tmpResult := []string{}
-		linkVals := strings.Split(linkStr, "|")
-		for i, linkChar := range linkVals {
-			if i == (len(linkVals) - 1) {
-				// |で分割した最後は表示名なので結果に加える
-				tmpResult = append(tmpResult, linkChar)
-			} else {
-				if strings.Contains(linkChar, "[[") {
-					subChar := strings.Split(linkChar, "[[")
-					for i, char := range subChar {
-						if i < (len(subChar) - 1) {
-							tmpResult = append(tmpResult, char)
-						}
-					}
-				}
-			}
+	var lRe = regexp.MustCompile(`\[\[(.+?\|?.+?)\]\]`)
+	// var linkRe   = regexp.MustCompile(`[\[|\]]`)
+
+	findDisplayName := func(s string) string {
+		// (.+?\|?.+?)の部分を取得
+		subStrs := lRe.FindStringSubmatch(s)
+		// マッチしていたら
+		if len(subStrs) == 2 {
+			// "|"で分割して最後の要素をreturn
+			matchStrs := strings.Split(subStrs[1],"|")
+			return matchStrs[len(matchStrs)-1]
 		}
-		linkStr = strings.Join(tmpResult, "")
-		linkStr = linkRe.ReplaceAllString(linkStr,"")
-		result = linkStr
+		return s
 	}
+	// [[val]]の形のやつを検索
+	// その中でfindDisplayName関数を実行した返り値に置き換え
+	result := lRe.ReplaceAllStringFunc(str, findDisplayName)
+
+	return result
+}
+func removeRef (str string) string {
+	var refRe = regexp.MustCompile(`<ref.*?>|</ref>`)
+	result := refRe.ReplaceAllString(str, "")
 	return result
 }
