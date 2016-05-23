@@ -90,7 +90,7 @@ func main() {
 		buf = strings.Trim(buf, "{}")
 
 		for i, kvStr := range sRe.Split(buf, -1) {
-			fmt.Println("-----------------------------\n")
+			fmt.Println("-----------------------------")
 			if i == 0 {
 				continue
 			}
@@ -128,7 +128,7 @@ func main() {
 				fmt.Printf("key: %s, content: %s\n", k, removeMarkup)
 			}
 		}
-		fmt.Println("============================================\n")
+		fmt.Println("=end============================================\n")
 	}
 }
 
