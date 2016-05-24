@@ -84,11 +84,11 @@ func main() {
 				buf += string(r)
 			}
 		}
-		//log.Println(buf)
+		// log.Println(buf)
 
 		// 先頭末尾の `{{` `}}` を除去
 		buf = strings.Trim(buf, "{}")
-
+		// fmt.Println(buf)
 		for i, kvStr := range sRe.Split(buf, -1) {
 			fmt.Println("-----------------------------")
 			if i == 0 {
@@ -102,9 +102,9 @@ func main() {
 			k := kv[0]
 			v := ""
 			if 2 <= len(kv) {
-				v = strings.Join(kv[1:], "") // = が複数回出てくる可能性があるので join する
+				v = strings.Join(kv[1:], "=") // = が複数回出てくる可能性があるので join する
 			}
-
+			// fmt.Printf("%q\n",kv)
 			// 先頭末尾の空白と改行を除去
 			k = strings.Trim(k, " \n")
 			v = strings.Trim(v, " \n")
