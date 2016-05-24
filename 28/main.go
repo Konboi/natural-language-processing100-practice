@@ -120,6 +120,8 @@ func main() {
 			removeMarkup = removeFile(removeMarkup)
 			// 外部リンクを除去
 			removeMarkup = removeExternalLink(removeMarkup)
+			// Citeを除去
+			removeMarkup = removeCiteLink(removeMarkup)
 
 			fmt.Printf("origin key: %s, content: %s \n\n", k, v)
 			if removeMarkup == "" {
@@ -200,4 +202,16 @@ func removeExternalLink (str string) string {
 		return s
 	}
 	return re.ReplaceAllStringFunc(str, findDisplayName)
+}
+func removeCiteLink (str string) string {
+	var re = regexp.MustCompile(`{{Cite.+?title=(.+?)\|.+?}}`)
+	replaceCiteTitle := func(s string) string {
+		subStrs := re.FindStringSubmatch(s)
+		if (len(subStrs) == 2) {
+			return "(" + subStrs[1] + ")"
+		}
+		return s
+	}
+	result := re.ReplaceAllStringFunc(str, replaceCiteTitle)
+	return result
 }
